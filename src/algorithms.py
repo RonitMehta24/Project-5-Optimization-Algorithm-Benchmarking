@@ -9,6 +9,7 @@ class Optimization:
     def steepest_descent(self):
         pass
 
+    #Basic functionality for newton's method withoput any critical case handling
     def newton_method(self,x0,tol=1e-6,max_iter=100,fallback_step_size=1e-3,):
         x = np.asarray(x0, dtype=float).copy()
 
