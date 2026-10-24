@@ -9,8 +9,8 @@ class Optimization:
     def steepest_descent(self):
         pass
 
-    #Basic functionality for newton's method withoput any critical case handling
-    def newton_method(self,x0,tol=1e-6,max_iter=100,fallback_step_size=1e-3,):
+    #Basic functionality for newton's method without any critical case handling
+    def newton_method(self,x0,tol=1e-6,max_iter=100,fallback_step_size=1e-3):
         x = np.asarray(x0, dtype=float).copy()
 
         history = {"x": [],"objective": [],"gradient_norm": [],"converged": False,}
@@ -52,3 +52,18 @@ class Optimization:
 
         return x, history, max_iter
 
+#Basic testing function
+def f(x):
+    return x[0]*x[0] + x[1]*x[1]
+
+def g(x):
+    return np.array([2*x[0], 2*x[1]])
+
+def h(x):
+    return np.array([[2, 0], [0, 2]])
+
+test = Optimization(f, g, h)
+x, y, z = test.newton_method(np.array([100, 100]))
+print(x)
+print(y)
+print(z)
