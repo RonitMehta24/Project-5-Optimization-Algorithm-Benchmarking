@@ -5,9 +5,50 @@ class Optimization:
         self.objective = objective 
         self.gradient = gradient
         self.hessian = hessian
+        return
 
-    def steepest_descent(self):
-        pass
+    # helper method for recording history
+    # The dictionary "history" should have the keys mentioned below, already having a python array as its corresponding value(empty or otherwise) 
+    def evaluate_and_record_history(self, x, history):
+        # calculate the values necessary for iteration
+        objective_value = float(self.objective(x))
+        gradient_value = np.asarray(self.gradient(x), dtype = float)
+        gradient_norm = np.linalg.norm(gradient_value)
+
+        # save these values in the history of the iteration
+        history["x"].append(x.copy())
+        history["objective_value"].append(objective_value)
+        history["gradient_value"].append(gradient_value.copy())
+        history["gradient_norm"].append(gradient_norm)
+        return objective_value, gradient_value, gradient_norm
+
+    def steepest_descent(self, x0, step_size = 1e-1, tolerance = 1e-6, maximum_iterations = 100):
+        x = np.asarray(x0, dtype = float).copy()
+        history = {"x": [], "objective_value": [], "gradient_value": [], "gradient_norm": []}
+        converged = False        
+        
+        for number_of_iterations in range(maximum_iterations):
+            objective_value, gradient_value, gradient_norm = self.evaluate_and_record_history(x, history)
+
+            # check if stopping criterion is met
+            if gradient_norm < tolerance:
+                converged = True
+                return x, history, converged, number_of_iterations
+
+            # move to the next iteration if it is not
+            x -= step_size*gradient_value
+
+        # if we exited out of the loop it means we iterated the maximum number of times
+        # so now we need to add the information related to the last x value in history
+        objective_value, gradient_value, gradient_norm = self.evaluate_and_record_history(x, history)
+        
+        # and we need to check if this x value falls within the tolerance for the convergence check
+        if gradient_norm < tolerance:
+            converged = True
+
+        return x, history, converged, maximum_iterations
+
+        
 
     #Basic functionality for newton's method without any critical case handling
     def newton_method(self,x0,tol=1e-6,max_iter=100,fallback_step_size=1e-3):
@@ -64,6 +105,23 @@ def h(x):
 
 test = Optimization(f, g, h)
 x, y, z = test.newton_method(np.array([100, 100]))
-print(x)
-print(y)
-print(z)
+print("Newton Method test:-")
+print("The final x vaule: ", x)
+print("Number of iterations stored in histoy: ", len(y["x"]))
+print("Number of iterations: ", z)
+
+#testing steepest descent when convergence occurs before reaching maximum iterations
+x, y, z, w = test.steepest_descent(np.array([10, 10]), 0.2)
+print("Steepest Descent test(not reaching maximum iterations):-")
+print("The final x value:", x)
+print("Number of iterations stored in history: ", len(y["x"]))
+print("Convergence: ", z)
+print("Number of iterations: ", w)
+
+#testing steepest descent when convergence does not occur before reaching maximum iterations
+x, y, z, w = test.steepest_descent(np.array([100, 100]), 0.01)
+print("Steepest Descent test(reaching maximum iterations):-")
+print("The final x value:", x)
+print("Number of iterations stored in history: ", len(y["x"]))
+print("Convergence: ", z)
+print("Number of iterations: ", w)
