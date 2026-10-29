@@ -39,14 +39,14 @@ class Optimization:
             x -= step_size*gradient_value
 
         # if we exited out of the loop it means we iterated the maximum number of times
-        # so now it is enough to check if the current x value meets the stopping criterion
-        gradient_value = np.asarray(self.gradient(x), dtype = float)
-        gradient_norm = np.linalg.norm(gradient_value)
+        # so now we need to add the information related to the last x value in history
+        objective_value, gradient_value, gradient_norm = self.evaluate_and_record_history(x, history)
         
+        # and we need to check if this x value falls within the tolerance for the convergence check
         if gradient_norm < tolerance:
             converged = True
 
-        return x, history, converged, number_of_iterations
+        return x, history, converged, maximum_iterations
 
         
 
@@ -105,11 +105,23 @@ def h(x):
 
 test = Optimization(f, g, h)
 x, y, z = test.newton_method(np.array([100, 100]))
-print(x)
-#print(y)
-print(z)
+print("Newton Method test:-")
+print("The final x vaule: ", x)
+print("Number of iterations stored in histoy: ", len(y["x"]))
+print("Number of iterations: ", z)
+
+#testing steepest descent when convergence occurs before reaching maximum iterations
 x, y, z, w = test.steepest_descent(np.array([10, 10]), 0.2)
-print(x)
-#print(y)
-print(z)
-print(w)
+print("Steepest Descent test(not reaching maximum iterations):-")
+print("The final x value:", x)
+print("Number of iterations stored in history: ", len(y["x"]))
+print("Convergence: ", z)
+print("Number of iterations: ", w)
+
+#testing steepest descent when convergence does not occur before reaching maximum iterations
+x, y, z, w = test.steepest_descent(np.array([100, 100]), 0.01)
+print("Steepest Descent test(reaching maximum iterations):-")
+print("The final x value:", x)
+print("Number of iterations stored in history: ", len(y["x"]))
+print("Convergence: ", z)
+print("Number of iterations: ", w)
