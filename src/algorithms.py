@@ -7,12 +7,23 @@ class Optimization:
         self.hessian = hessian
         return
 
-    # helper method for recording history
+    # helper method for evaluating the necessary values for each iteration and recording history
     # The dictionary "history" should have the keys mentioned below, already having a python array as its corresponding value(empty or otherwise) 
     def evaluate_and_record_history(self, x, history):
         # calculate the values necessary for iteration
         objective_value = float(self.objective(x))
         gradient_value = np.asarray(self.gradient(x), dtype = float)
+
+        # check for matching dimensions and non-finite values
+        if gradient_value.shape != x.shape:
+            raise ValueError("Gradient shape must match the shape of x.")
+
+        if not np.isfinite(objective_value):
+            raise ValueError("Objective returned a non-finite value.")
+
+        if not np.all(np.isfinite(gradient_value)):
+            raise ValueError("Gradient contains non-finite values.")
+
         gradient_norm = np.linalg.norm(gradient_value)
 
         # save these values in the history of the iteration
@@ -20,9 +31,10 @@ class Optimization:
         history["objective_value"].append(objective_value)
         history["gradient_value"].append(gradient_value.copy())
         history["gradient_norm"].append(gradient_norm)
+        
         return objective_value, gradient_value, gradient_norm
 
-    def steepest_descent(self, x0, step_size = 1e-1, tolerance = 1e-6, maximum_iterations = 100):
+    def steepest_descent(self, x0, tolerance = 1e-6, step_size = 0.1, maximum_iterations = 100):
         x = np.asarray(x0, dtype = float).copy()
         history = {"x": [], "objective_value": [], "gradient_value": [], "gradient_norm": []}
         converged = False        
@@ -49,28 +61,7 @@ class Optimization:
         return x, history, converged, maximum_iterations
 
 
-    #Evaluate the objective and gradient, and record the iteration.
-    def evaluate_and_record_history(self, x, history):
-        objective_value = float(self.objective(x))
-        gradient_value = np.asarray(self.gradient(x), dtype=float)
-
-        if gradient_value.shape != x.shape:
-            raise ValueError("Gradient shape must match the shape of x.")
-
-        if not np.isfinite(objective_value):
-            raise ValueError("Objective returned a non-finite value.")
-
-        if not np.all(np.isfinite(gradient_value)):
-            raise ValueError("Gradient contains non-finite values.")
-
-        gradient_norm = float(np.linalg.norm(gradient_value))
-
-        history["x"].append(x.copy())
-        history["objective_value"].append(objective_value)
-        history["gradient_value"].append(gradient_value.copy())
-        history["gradient_norm"].append(gradient_norm)
-
-        return objective_value, gradient_value, gradient_norm
+   
 
     #Basic functionality for newton's method withoput any critical case handling 
     def newton_method(self,x0,tol=1e-6,max_iter=100,fallback_step_size=1e-3,condition_threshold=1e12,):
@@ -109,7 +100,7 @@ class Optimization:
 
             H = np.asarray(self.hessian(x), dtype=float)
 
-            # Validatimg the Hessian
+            # Validating the Hessian
             if H.shape != (x.size, x.size):
                 raise ValueError("Hessian must be a square matrix matching the dimension of x.")
             if not np.all(np.isfinite(H)):
@@ -164,14 +155,15 @@ def h(x):
     return np.array([[2, 0], [0, 2]])
 
 test = Optimization(f, g, h)
-x, y, z = test.newton_method(np.array([100, 100]))
-print("Newton Method test:-")
+x, y, z, w = test.newton_method(np.array([100, 100]))
+print("Newton Method test(not reaching maximum iterations):-")
 print("The final x vaule: ", x)
 print("Number of iterations stored in histoy: ", len(y["x"]))
-print("Number of iterations: ", z)
+print("Convergence: ", z)
+print("Number of iterations: ", w)
 
 #testing steepest descent when convergence occurs before reaching maximum iterations
-x, y, z, w = test.steepest_descent(np.array([10, 10]), 0.2)
+x, y, z, w = test.steepest_descent(np.array([1, 1]), 1e-6 , 0.1)
 print("Steepest Descent test(not reaching maximum iterations):-")
 print("The final x value:", x)
 print("Number of iterations stored in history: ", len(y["x"]))
@@ -179,7 +171,7 @@ print("Convergence: ", z)
 print("Number of iterations: ", w)
 
 #testing steepest descent when convergence does not occur before reaching maximum iterations
-x, y, z, w = test.steepest_descent(np.array([100, 100]), 0.01)
+x, y, z, w = test.steepest_descent(np.array([1, 1]), 1e-6, 0.01)
 print("Steepest Descent test(reaching maximum iterations):-")
 print("The final x value:", x)
 print("Number of iterations stored in history: ", len(y["x"]))
