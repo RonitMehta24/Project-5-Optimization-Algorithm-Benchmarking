@@ -153,3 +153,35 @@ class Optimization:
         return x, history, False, max_iter
 
 
+#Basic testing function
+def f(x):
+    return x[0]*x[0] + x[1]*x[1]
+
+def g(x):
+    return np.array([2*x[0], 2*x[1]])
+
+def h(x):
+    return np.array([[2, 0], [0, 2]])
+
+test = Optimization(f, g, h)
+x, y, z = test.newton_method(np.array([100, 100]))
+print("Newton Method test:-")
+print("The final x vaule: ", x)
+print("Number of iterations stored in histoy: ", len(y["x"]))
+print("Number of iterations: ", z)
+
+#testing steepest descent when convergence occurs before reaching maximum iterations
+x, y, z, w = test.steepest_descent(np.array([10, 10]), 0.2)
+print("Steepest Descent test(not reaching maximum iterations):-")
+print("The final x value:", x)
+print("Number of iterations stored in history: ", len(y["x"]))
+print("Convergence: ", z)
+print("Number of iterations: ", w)
+
+#testing steepest descent when convergence does not occur before reaching maximum iterations
+x, y, z, w = test.steepest_descent(np.array([100, 100]), 0.01)
+print("Steepest Descent test(reaching maximum iterations):-")
+print("The final x value:", x)
+print("Number of iterations stored in history: ", len(y["x"]))
+print("Convergence: ", z)
+print("Number of iterations: ", w)
