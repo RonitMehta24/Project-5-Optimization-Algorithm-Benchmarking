@@ -1,6 +1,13 @@
 import algorithms
 #import tests
 
+from test_functions import (
+    SphereFunction,
+    BoothFunction,
+    RosenbrockFunction,
+    HimmelblauFunction
+)
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -35,7 +42,8 @@ class Benchmark:
             "history": history,
             "converged": converged,
             "iteration_count": iteration_count,
-            "final_objective":float(self.objective(x))
+            "final_objective":float(self.objective(x)),
+            "distance_from_solution": self.distance_from_solution(x) 
         }
         if plot:
             self.plot_history("Newton's Method")
@@ -44,14 +52,16 @@ class Benchmark:
     def run_steepest_descent(self, plot = True):
             x , history, converged, iteration_count = (
                             self.optimizer.steepest_descent(x0 = self.x0.copy(),
-                            tolerance = self.tolerance, 
+                            tolerance = self.tolerance,
+                            step_size=self.step_size, 
                             maximum_iterations = self.max_iter))
             self.results["Steepest Descent"] = {
                 "x": np.asarray(x, dtype = float),
                 "history": history,
                 "converged": converged,
                 "iteration_count": iteration_count,
-                "final_objective": float(self.objective())
+                "final_objective": float(self.objective(x)),
+                "distance_from_solution": self.distance_from_solution(x)
             }
             if plot:
                 self.plot_history("Steepest Descent")
@@ -82,7 +92,7 @@ class Benchmark:
         fig, axes = plt.subplots(1, 2, figsize = (14,5))
 
         for name, result in selected_results.items():
-            values = result["history"]["objective"]
+            values = result["history"]["objective_value"]
 
             axes[0].plot(range(len(values)), values, marker = "o", markersize = 3, label = name)
         axes[0].set_xlabel("Iteration")
@@ -155,3 +165,46 @@ class Benchmark:
 
 
 
+        
+
+if __name__ == "__main__":
+
+    benchmark = Benchmark(
+        test_class=RosenbrockFunction,
+        optimization_class=algorithms.Optimization,
+        x0=np.array([-1.2, 1.0]),
+        step_size=0.001
+    )
+
+    # Newton's method
+    print("\n===== NEWTON'S METHOD =====")
+
+    x_newton, history_newton, converged_newton, iterations_newton = (
+        benchmark.run_newton_method(plot=False)
+    )
+
+    print("Final point:", x_newton)
+    print("Final objective:", benchmark.objective(x_newton))
+    print("Converged:", converged_newton)
+    print("Iterations:", iterations_newton)
+    print("History length:", len(history_newton["x"]))
+    print("Distance from solution:",
+          benchmark.distance_from_solution(x_newton))
+
+    # Steepest descent
+    print("\n===== STEEPEST DESCENT =====")
+
+    x_sd, history_sd, converged_sd, iterations_sd = (
+        benchmark.run_steepest_descent(plot=False)
+    )
+
+    print("Final point:", x_sd)
+    print("Final objective:", benchmark.objective(x_sd))
+    print("Converged:", converged_sd)
+    print("Iterations:", iterations_sd)
+    print("History length:", len(history_sd["x"]))
+    print("Distance from solution:",
+          benchmark.distance_from_solution(x_sd))
+
+    # Plot both methods
+    benchmark.plot_history()
