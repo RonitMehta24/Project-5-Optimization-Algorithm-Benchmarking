@@ -155,28 +155,3 @@ class Benchmark:
 
 
 
-# Temporary test function
-class QuadraticTest:
-    @staticmethod
-    def objective(x):
-        return x[0]**2 + x[1]**2
-
-    @staticmethod
-    def gradient(x):
-        return np.array([2*x[0], 2*x[1]])
-
-    @staticmethod
-    def hessian(x):
-        return np.array([
-            [2, 0],
-            [0, 2]
-        ])
-
-benchmark = Benchmark(test_class = QuadraticTest, optimization_class = algorithms.Optimization)
-x, history, iteration_count = (benchmark.run_newton_method(plot = False))
-
-print("x:", x)
-print("Ieration count:", iteration_count)
-print("Objective history:", history["objective"])
-print("Converged:", history["converged"])
-benchmark.plot_history("Newton's Method")
