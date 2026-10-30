@@ -1,5 +1,5 @@
 import algorithms
-#import tests
+from matplotlib.colors import LogNorm
 
 from test_functions import (
     SphereFunction,
@@ -122,10 +122,14 @@ class Benchmark:
 
 
     def plot_history(self, method = None):
+        
+        #Check whether optimization results are available
         if not self.results:
             print("Run an optimization method first")
             return
 
+
+        
         if method is None:
             selected_results = self.results
         else:
@@ -170,40 +174,84 @@ class Benchmark:
                 point = np.array([X1[i, j], X2[i, j]])
                 Z[i, j] = self.objective(point)
 
-        axes[1].contourf(
+        contour = axes[1].contourf(
             X1, X2, Z,
             levels=30,
             cmap="viridis"
         )
+        # Add contour lines
+        axes[1].contour(
+            X1, X2, Z,
+            levels=30,
+            colors="black",
+            linewidths=0.4,
+            alpha=0.4
+        )
 
-        # Plot optimization paths
+        fig.colorbar(contour, ax=axes[1], label="Objective value")
+
         for name, result in selected_results.items():
-
-            path = np.asarray(result["history"]["x"])
+            path = np.array(result["history"]["x"])
 
             axes[1].plot(
                 path[:, 0],
                 path[:, 1],
                 marker="o",
                 markersize=3,
+                markevery=max(1, len(path) // 15),
+                linewidth=1.5,
                 label=name
             )
 
-        # Mark all known minimizers
+            # Mark the final point
+            axes[1].scatter(
+                path[-1, 0],
+                path[-1, 1],
+                marker="X",
+                s=100,
+                edgecolors="black",
+                label=name + " final point"
+            )
+
+            # Add arrows to indicate direction of movement
+            for i in range(0, len(path) - 1, max(1, len(path) // 10)):
+
+                axes[1].annotate(
+                    "",
+                    xy=path[i + 1],
+                    xytext=path[i],
+                    arrowprops=dict(arrowstyle="->", color="white")
+                )
+
+        # Mark initial point
+        axes[1].scatter(
+            self.x0[0],
+            self.x0[1],
+            marker="s",
+            s=100,
+            color="white",
+            edgecolors="black",
+            label="Initial point",
+            zorder=5
+        )
+
+        # Mark known minimizers
         axes[1].scatter(
             self.solution[:, 0],
             self.solution[:, 1],
             marker="*",
-            s=150,
+            s=180,
             color="red",
-            label="Known minima"
+            edgecolors="black",
+            label="Known minima",
+            zorder=6
         )
 
         axes[1].set_xlabel("$x_1$")
         axes[1].set_ylabel("$x_2$")
-        axes[1].set_title("Optimization Paths")
-        axes[1].legend()
-        axes[1].grid(True)
+        axes[1].set_title("Optimization Trajectories")
+        axes[1].legend(fontsize=8)
+        axes[1].grid(alpha=0.2)
 
         plt.tight_layout()
         plt.show()
