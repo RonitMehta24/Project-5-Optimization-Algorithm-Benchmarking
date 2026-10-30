@@ -68,8 +68,41 @@ class Benchmark:
             return x, history, converged, iteration_count
     
     #have to add a compare function
+    
     def compare_methods(self):
-        pass
+
+        self.results = {}
+
+        # Run both methods
+        self.run_newton_method(plot=False)
+        self.run_steepest_descent(plot=False)
+
+        # Display comparison
+        print("\nComparison of Optimization Methods")
+        print("Test Function:", self.test_class.__name__)
+
+        for name, result in self.results.items():
+
+            print("\n", name)
+            print("Final point:", result["x"])
+            print("Final objective:", result["final_objective"])
+            print("Iterations:", result["iteration_count"])
+            print("Converged:", result["converged"])
+
+            gradient_norm = result["history"]["gradient_norm"][-1]
+            print("Final gradient norm:", gradient_norm)
+
+            print(
+                "Distance from solution:",
+                self.distance_from_solution(result["x"])
+            )
+
+        # Plot both methods together
+        self.plot_history()
+
+        return self.results
+
+        
 
     def distance_from_solution(self, x):
         distances = np.linalg.norm(self.solution - x, axis=1)
@@ -176,35 +209,4 @@ if __name__ == "__main__":
         step_size=0.001
     )
 
-    # Newton's method
-    print("\n===== NEWTON'S METHOD =====")
-
-    x_newton, history_newton, converged_newton, iterations_newton = (
-        benchmark.run_newton_method(plot=False)
-    )
-
-    print("Final point:", x_newton)
-    print("Final objective:", benchmark.objective(x_newton))
-    print("Converged:", converged_newton)
-    print("Iterations:", iterations_newton)
-    print("History length:", len(history_newton["x"]))
-    print("Distance from solution:",
-          benchmark.distance_from_solution(x_newton))
-
-    # Steepest descent
-    print("\n===== STEEPEST DESCENT =====")
-
-    x_sd, history_sd, converged_sd, iterations_sd = (
-        benchmark.run_steepest_descent(plot=False)
-    )
-
-    print("Final point:", x_sd)
-    print("Final objective:", benchmark.objective(x_sd))
-    print("Converged:", converged_sd)
-    print("Iterations:", iterations_sd)
-    print("History length:", len(history_sd["x"]))
-    print("Distance from solution:",
-          benchmark.distance_from_solution(x_sd))
-
-    # Plot both methods
-    benchmark.plot_history()
+    benchmark.compare_methods()
