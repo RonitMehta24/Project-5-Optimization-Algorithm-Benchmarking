@@ -5,55 +5,65 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class Benchmark:
-    def __init__(self, test_class, optimization_class):
+    def __init__(self, test_class, optimization_class, x0, step_size = 0.001):
         
         #Extracting information from test class
+        self.test_class = test_class
         self.objective = test_class.objective
         self.gradient = test_class.gradient
         self.hessian = test_class.hessian
 
         #initializing these parameters manually now, will be updated later
-        self.solution = np.array([0.0, 0.0])
-        self.tolerance = 1e-6
-        self.x0 = np.array([5.0, 5.0])
-        self.step_size = 0.1
-        self.max_iter = 200
+        self.solution = np.asarray(test_class.solution(), dtype = float)
+        self.minimum_value = test_class.minimum_value()
+        self.tolerance = test_class.TOLERANCE
+        self.max_iter = test_class.MAX_ITERATIONS
+        self.x0 = np.asarray(x0, dtype = float).copy()
+        self.step_size = step_size
 
         self.optimizer = optimization_class(self.objective, self.gradient, self.hessian)
 
-        self.results = {}
+        self.results = {}  #Dictionary to store results
 
     def run_newton_method(self, plot = True):
-        x , history, iteration_count = (
+        x , history, converged, iteration_count = (
                         self.optimizer.newton_method(x0 = self.x0.copy(),
                         tol = self.tolerance, 
                         max_iter = self.max_iter))
         self.results["Newton's Method"] = {
             "x": np.asarray(x, dtype = float),
             "history": history,
-            "iteration_count": iteration_count
+            "converged": converged,
+            "iteration_count": iteration_count,
+            "final_objective":float(self.objective(x))
         }
         if plot:
             self.plot_history("Newton's Method")
-        return x, history, iteration_count
+        return x, history, converged, iteration_count
 
     def run_steepest_descent(self, plot = True):
-            x , history, iteration_count = (
+            x , history, converged, iteration_count = (
                             self.optimizer.steepest_descent(x0 = self.x0.copy(),
-                            tol = self.tolerance, 
-                            max_iter = self.max_iter))
-            self.results["Newton's Method"] = {
+                            tolerance = self.tolerance, 
+                            maximum_iterations = self.max_iter))
+            self.results["Steepest Descent"] = {
                 "x": np.asarray(x, dtype = float),
                 "history": history,
-                "iteration_count": iteration_count
+                "converged": converged,
+                "iteration_count": iteration_count,
+                "final_objective": float(self.objective())
             }
             if plot:
-                self.plot_history("Newton's Method")
-            return x, history, iteration_count
+                self.plot_history("Steepest Descent")
+            return x, history, converged, iteration_count
     
     #have to add a compare function
     def compare_methods(self):
         pass
+
+    def distance_from_solution(self, x):
+        distances = np.linalg.norm(self.solution - x, axis=1)
+        return np.min(distances)
 
 
     def plot_history(self, method = None):
@@ -81,27 +91,68 @@ class Benchmark:
         axes[0].legend()
         axes[0].grid(True)
 
-        x1 = np.linspace(-10, 100, 100)
-        x2 = np.linspace(-10, 110, 100)
-        X1, X2 = np.meshgrid(x1, x2)
+        all_points = [self.x0]
 
+        for result in selected_results.values():
+            all_points.extend(result["history"]["x"])
+
+        all_points = np.asarray(all_points)
+
+        # Include known minimizers when choosing plot limits
+        plot_points = np.vstack((all_points, self.solution))
+
+        lower = np.min(plot_points, axis=0) - 1.0
+        upper = np.max(plot_points, axis=0) + 1.0
+
+        x1 = np.linspace(lower[0], upper[0], 150)
+        x2 = np.linspace(lower[1], upper[1], 150)
+
+        X1, X2 = np.meshgrid(x1, x2)
         Z = np.zeros_like(X1)
 
         for i in range(X1.shape[0]):
             for j in range(X1.shape[1]):
-                Z[i, j] = self.objective(np.array([X1[i,j], X2[i,j]]))
-        axes[1].contourf(X1, X2, Z, levels = 20, cmap = "viridis")
-        for name, result in selected_results.items():
-            path = np.asarray(result["history"]["x"])
-            axes[1].plot(path[:,0], path[:,1], "o", label = name)
+                point = np.array([X1[i, j], X2[i, j]])
+                Z[i, j] = self.objective(point)
 
-        axes[1].plot(self.solution[0], self.solution[1], "r*", markersize = 12, label = "Minimum")
+        axes[1].contourf(
+            X1, X2, Z,
+            levels=30,
+            cmap="viridis"
+        )
+
+        # Plot optimization paths
+        for name, result in selected_results.items():
+
+            path = np.asarray(result["history"]["x"])
+
+            axes[1].plot(
+                path[:, 0],
+                path[:, 1],
+                marker="o",
+                markersize=3,
+                label=name
+            )
+
+        # Mark all known minimizers
+        axes[1].scatter(
+            self.solution[:, 0],
+            self.solution[:, 1],
+            marker="*",
+            s=150,
+            color="red",
+            label="Known minima"
+        )
+
         axes[1].set_xlabel("$x_1$")
         axes[1].set_ylabel("$x_2$")
-        axes[1].set_title("Optimization path")
+        axes[1].set_title("Optimization Paths")
         axes[1].legend()
+        axes[1].grid(True)
 
+        plt.tight_layout()
         plt.show()
+
 
 
 # Temporary test function
