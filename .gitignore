@@ -1,4 +1,13 @@
-*.tex
+
+# ignore the tex files in this folder as it is not meant to be edited
+info/ProjectDesign/*.tex
+
+# ignore log files related to tex files 
 *.log
 *.aux
 
+# for ignoring auto-save files related to emacs 
+\#*\#
+
+# ignore the pycache files generated from running python files
+**/__pycache__/
