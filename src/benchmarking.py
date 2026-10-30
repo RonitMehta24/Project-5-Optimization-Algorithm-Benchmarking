@@ -1,5 +1,5 @@
 import algorithms
-from matplotlib.colors import LogNorm
+import matplotlib.pyplot as plt
 
 from test_functions import (
     SphereFunction,
@@ -176,7 +176,7 @@ class Benchmark:
 
         contour = axes[1].contourf(
             X1, X2, Z,
-            levels=30,
+            levels=15,
             cmap="viridis"
         )
         # Add contour lines
@@ -197,6 +197,7 @@ class Benchmark:
                 path[:, 0],
                 path[:, 1],
                 marker="o",
+                
                 markersize=3,
                 markevery=max(1, len(path) // 15),
                 linewidth=1.5,
@@ -213,26 +214,16 @@ class Benchmark:
                 label=name + " final point"
             )
 
-            # Add arrows to indicate direction of movement
-            for i in range(0, len(path) - 1, max(1, len(path) // 10)):
-
-                axes[1].annotate(
-                    "",
-                    xy=path[i + 1],
-                    xytext=path[i],
-                    arrowprops=dict(arrowstyle="->", color="white")
-                )
-
         # Mark initial point
         axes[1].scatter(
             self.x0[0],
             self.x0[1],
             marker="s",
-            s=100,
-            color="white",
+            s=50,
+            color="yellow",
             edgecolors="black",
             label="Initial point",
-            zorder=5
+            zorder=3
         )
 
         # Mark known minimizers
