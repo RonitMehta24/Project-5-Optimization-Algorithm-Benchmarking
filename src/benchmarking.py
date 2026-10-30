@@ -20,19 +20,28 @@ class Benchmark:
         self.gradient = test_class.gradient
         self.hessian = test_class.hessian
 
-        #initializing these parameters manually now, will be updated later
+        #Store the known global minimizers and minimum objective value
         self.solution = np.asarray(test_class.solution(), dtype = float)
         self.minimum_value = test_class.minimum_value()
+
+        #Get the stopping tolerance and maximum iterations defined in the test function class
         self.tolerance = test_class.TOLERANCE
         self.max_iter = test_class.MAX_ITERATIONS
+        
+        #Store the initial point and step size
+        #copy() prevents accidental modification of the original x0
         self.x0 = np.asarray(x0, dtype = float).copy()
         self.step_size = step_size
 
+
+        #Initialize the optimization object using the selected
+        #objective function, gradient and Hessian
         self.optimizer = optimization_class(self.objective, self.gradient, self.hessian)
 
         self.results = {}  #Dictionary to store results
 
     def run_newton_method(self, plot = True):
+
         x , history, converged, iteration_count = (
                         self.optimizer.newton_method(x0 = self.x0.copy(),
                         tol = self.tolerance, 
@@ -45,11 +54,13 @@ class Benchmark:
             "final_objective":float(self.objective(x)),
             "distance_from_solution": self.distance_from_solution(x) 
         }
-        if plot:
+
+        if plot:    # Plot the optimization history if requested
             self.plot_history("Newton's Method")
         return x, history, converged, iteration_count
 
     def run_steepest_descent(self, plot = True):
+            
             x , history, converged, iteration_count = (
                             self.optimizer.steepest_descent(x0 = self.x0.copy(),
                             tolerance = self.tolerance,
@@ -67,10 +78,11 @@ class Benchmark:
                 self.plot_history("Steepest Descent")
             return x, history, converged, iteration_count
     
-    #have to add a compare function
+    
     
     def compare_methods(self):
 
+        #Clear previous results before starting a new comparison
         self.results = {}
 
         # Run both methods
@@ -198,15 +210,23 @@ class Benchmark:
 
 
 
-        
-
+# for testing benchmark implementation
 if __name__ == "__main__":
 
-    benchmark = Benchmark(
-        test_class=RosenbrockFunction,
-        optimization_class=algorithms.Optimization,
-        x0=np.array([-1.2, 1.0]),
-        step_size=0.001
-    )
+    test_cases = [
+        (SphereFunction, np.array([5.0, 5.0]), 0.1),
+        (BoothFunction, np.array([0.0, 0.0]), 0.01),
+        (RosenbrockFunction, np.array([-1.2, 1.0]), 0.001),
+        (HimmelblauFunction, np.array([0.0, 0.0]), 0.001)
+    ]
 
-    benchmark.compare_methods()
+    for function, initial_point, step_size in test_cases:
+
+        benchmark = Benchmark(
+            test_class=function,
+            optimization_class=algorithms.Optimization,
+            x0=initial_point,
+            step_size=step_size
+        )
+
+        benchmark.compare_methods()
