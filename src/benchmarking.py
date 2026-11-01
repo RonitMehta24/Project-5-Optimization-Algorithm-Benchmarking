@@ -258,6 +258,8 @@ class Benchmark:
 # for testing benchmark implementation
 if __name__ == "__main__":
 
+    #uncomment the test you want to run
+
     # test_cases = [
     #     (SphereFunction, np.array([5.0, 5.0]), 0.1),
     #     (BoothFunction, np.array([0.0, 0.0]), 0.01),
@@ -296,3 +298,8 @@ if __name__ == "__main__":
     # Benchmark(RosenbrockFunction, algorithms.Optimization, [0.0, 0.0], 0.001).run_steepest_descent()
     # Benchmark(HimmelblauFunction, algorithms.Optimization, [3.0, 0.0], 0.001).run_steepest_descent()
     # Benchmark(HimmelblauFunction, algorithms.Optimization, [-3.0, 3.0], 0.001).run_steepest_descent()
+
+    # Benchmark(SphereFunction, algorithms.Optimization, [-1.2, 1.0]).run_newton_method()
+    # Benchmark(BoothFunction, algorithms.Optimization, [0.0, 0.0]).run_newton_method()
+    Benchmark(RosenbrockFunction, algorithms.Optimization, [0, 1]).run_newton_method()
+    # Benchmark(HimmelblauFunction, algorithms.Optimization, [-2.0, 2.0]).run_newton_method()
