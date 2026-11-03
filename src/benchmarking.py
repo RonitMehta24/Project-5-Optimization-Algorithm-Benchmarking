@@ -1,5 +1,6 @@
 import algorithms
 import matplotlib.pyplot as plt
+from time import perf_counter
 
 from test_functions import (
     SphereFunction,
@@ -41,18 +42,20 @@ class Benchmark:
         self.results = {}  #Dictionary to store results
 
     def run_newton_method(self, plot = True):
-
+        start = perf_counter()
         x , history, converged, iteration_count = (
                         self.optimizer.newton_method(x0 = self.x0.copy(),
                         tol = self.tolerance, 
                         max_iter = self.max_iter))
+        elapsed_time =perf_counter() - start
         self.results["Newton's Method"] = {
             "x": np.asarray(x, dtype = float),
             "history": history,
             "converged": converged,
             "iteration_count": iteration_count,
             "final_objective":float(self.objective(x)),
-            "distance_from_solution": self.distance_from_solution(x) 
+            "distance_from_solution": self.distance_from_solution(x),
+            "elapsed_time": elapsed_time
         }
         
         print("\nNewton's Method")
@@ -64,6 +67,7 @@ class Benchmark:
         print("Converged:", converged)
         print("Final gradient norm:", history["gradient_norm"][-1])
         print("Distance from solution:", self.distance_from_solution(x))
+        print("Elapsed time:", f"{elapsed_time:.6f} seconds")
 
 
         if plot:    # Plot the optimization history if requested
@@ -71,19 +75,23 @@ class Benchmark:
         return x, history, converged, iteration_count
 
     def run_steepest_descent(self, plot = True):
-            
+
+        start = perf_counter()   
         x , history, converged, iteration_count = (
                         self.optimizer.steepest_descent(x0 = self.x0.copy(),
                         tolerance = self.tolerance,
                         step_size=self.step_size, 
                         maximum_iterations = self.max_iter))
+        elapsed_time = perf_counter() - start
+        
         self.results["Steepest Descent"] = {
             "x": np.asarray(x, dtype = float),
             "history": history,
             "converged": converged,
             "iteration_count": iteration_count,
             "final_objective": float(self.objective(x)),
-            "distance_from_solution": self.distance_from_solution(x)
+            "distance_from_solution": self.distance_from_solution(x),
+            "elapsed_time":elapsed_time
         }
 
 
@@ -97,6 +105,7 @@ class Benchmark:
         print("Converged:", converged)
         print("Final gradient norm:", history["gradient_norm"][-1])
         print("Distance from solution:", self.distance_from_solution(x))
+        print("Elapsed time:", f"{elapsed_time:.6f} seconds")
 
         if plot:
             self.plot_history("Steepest Descent")
@@ -104,7 +113,7 @@ class Benchmark:
     
     
     
-    def compare_methods(self):
+    def compare_methods(self, plot = True):
         
         #Clear previous results before starting a new comparison
         self.results = {}
@@ -116,7 +125,8 @@ class Benchmark:
         self.run_steepest_descent(plot=False)
 
         # Plot both methods together
-        self.plot_history()
+        if plot:
+            self.plot_history()
 
         return self.results
 
@@ -145,6 +155,8 @@ class Benchmark:
             selected_results = {method: self.results[method]}
 
         fig, axes = plt.subplots(1, 2, figsize = (14,5))
+
+        fig.suptitle(f"Optimization Results — {self.test_class.__name__}", fontsize=16)
 
         for name, result in selected_results.items():
             values = result["history"]["objective_value"]
@@ -260,23 +272,23 @@ if __name__ == "__main__":
 
     #uncomment the test you want to run
 
-    # test_cases = [
-    #     (SphereFunction, np.array([5.0, 5.0]), 0.1),
-    #     (BoothFunction, np.array([0.0, 0.0]), 0.01),
-    #     (RosenbrockFunction, np.array([-1.2, 1.0]), 0.001),
-    #     (HimmelblauFunction, np.array([0.0, 0.0]), 0.001)
-    # ]
+    test_cases = [
+        (SphereFunction, np.array([5.0, 5.0]), 0.1),
+        (BoothFunction, np.array([0.0, 0.0]), 0.01),
+        (RosenbrockFunction, np.array([-1.2, 1.0]), 0.001),
+        (HimmelblauFunction, np.array([0.0, 0.0]), 0.001)
+    ]
 
-    # for function, initial_point, step_size in test_cases:
+    for function, initial_point, step_size in test_cases:
 
-    #     benchmark = Benchmark(
-    #         test_class=function,
-    #         optimization_class=algorithms.Optimization,
-    #         x0=initial_point,
-    #         step_size=step_size
-    #     )
+        benchmark = Benchmark(
+            test_class=function,
+            optimization_class=algorithms.Optimization,
+            x0=initial_point,
+            step_size=step_size
+        )
 
-    #     benchmark.compare_methods()
+        benchmark.compare_methods()
 
     # Compare Newton's method and steepest descent on each function
     # Benchmark(SphereFunction, algorithms.Optimization, [5.0, 5.0], 0.1).compare_methods()
@@ -301,5 +313,5 @@ if __name__ == "__main__":
 
     # Benchmark(SphereFunction, algorithms.Optimization, [-1.2, 1.0]).run_newton_method()
     # Benchmark(BoothFunction, algorithms.Optimization, [0.0, 0.0]).run_newton_method()
-    Benchmark(RosenbrockFunction, algorithms.Optimization, [0, 1]).run_newton_method()
+    # Benchmark(RosenbrockFunction, algorithms.Optimization, [0, 1]).run_newton_method()
     # Benchmark(HimmelblauFunction, algorithms.Optimization, [-2.0, 2.0]).run_newton_method()
