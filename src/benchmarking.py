@@ -266,52 +266,87 @@ class Benchmark:
         plt.show()
 
 
-
-# for testing benchmark implementation
 if __name__ == "__main__":
 
-    #uncomment the test you want to run
+    functions = {
+        "1": (SphereFunction, [5.0, 5.0], 0.1),
+        "2": (BoothFunction, [0.0, 0.0], 0.01),
+        "3": (RosenbrockFunction, [-1.2, 1.0], 0.001),
+        "4": (HimmelblauFunction, [0.0, 0.0], 0.001)
+    }
 
-    test_cases = [
-        (SphereFunction, np.array([5.0, 5.0]), 0.1),
-        (BoothFunction, np.array([0.0, 0.0]), 0.01),
-        (RosenbrockFunction, np.array([-1.2, 1.0]), 0.001),
-        (HimmelblauFunction, np.array([0.0, 0.0]), 0.001)
-    ]
+    try:
+        print("\nChoose a function:")
+        print("1. Sphere")
+        print("2. Booth")
+        print("3. Rosenbrock")
+        print("4. Himmelblau")
 
-    for function, initial_point, step_size in test_cases:
+        choice = input("Function number: ").strip()
+
+        if choice not in functions:
+            raise ValueError("Choose a function number from 1 to 4.")
+
+        function, default_x0, default_step = functions[choice]
+
+        print("\nChoose an experiment:")
+        print("1. Steepest descent")
+        print("2. Newton's method")
+        print("3. Compare both")
+
+        method = input("Experiment number: ").strip()
+
+        if method not in ("1", "2", "3"):
+            raise ValueError("Choose an experiment number from 1 to 3.")
+
+        point = input(
+            f"Starting point, separated by a space "
+            f"[default: {default_x0[0]} {default_x0[1]}]: "
+        ).strip()
+
+        x0 = (
+            np.array(point.split(), dtype=float)
+            if point else np.array(default_x0)
+        )
+
+        if x0.shape != (2,) or not np.all(np.isfinite(x0)):
+            raise ValueError("Enter exactly two finite numbers.")
+
+        step_size = default_step
+
+        if method in ("1", "3"):
+            step = input(
+                f"Steepest-descent step size [default: {default_step}]: "
+            ).strip()
+
+            step_size = float(step) if step else default_step
+
+            if not np.isfinite(step_size) or step_size <= 0:
+                raise ValueError("Step size must be positive and finite.")
+
+        answer = input("Show plots? [y/n, default: y]: ").strip().lower()
+
+        if answer not in ("", "y", "yes", "n", "no"):
+            raise ValueError("Enter y or n.")
+
+        plot = answer in ("", "y", "yes")
 
         benchmark = Benchmark(
             test_class=function,
             optimization_class=algorithms.Optimization,
-            x0=initial_point,
+            x0=x0,
             step_size=step_size
         )
 
-        benchmark.compare_methods()
+        
+        if method == "1":
+            benchmark.run_steepest_descent(plot=plot)
 
-    # Compare Newton's method and steepest descent on each function
-    # Benchmark(SphereFunction, algorithms.Optimization, [5.0, 5.0], 0.1).compare_methods()
-    # Benchmark(BoothFunction, algorithms.Optimization, [0.0, 0.0], 0.01).compare_methods()
-    # Benchmark(RosenbrockFunction, algorithms.Optimization, [-1.2, 1.0], 0.001).compare_methods()
-    # Benchmark(HimmelblauFunction, algorithms.Optimization, [0.0, 0.0], 0.001).compare_methods()
+        elif method == "2":
+            benchmark.run_newton_method(plot=plot)
 
-    # Effect of step size: same Sphere function and starting point.
-    # Benchmark(SphereFunction, algorithms.Optimization, [5.0, 5.0], 0.01).run_steepest_descent()
-    # Benchmark(SphereFunction, algorithms.Optimization, [5.0, 5.0], 0.1).run_steepest_descent()
-    # Benchmark(SphereFunction, algorithms.Optimization, [5.0, 5.0], 0.5).run_steepest_descent()
-    # Step 1.0 oscillates without converging on Sphere.
-    # Benchmark(SphereFunction, algorithms.Optimization, [5.0, 5.0], 1.0).run_steepest_descent()
+        else:
+            benchmark.compare_methods(plot=plot)
 
-    # Effect of starting point: same function and step size within each group.
-    # Benchmark(SphereFunction, algorithms.Optimization, [1.0, 1.0], 0.1).run_steepest_descent()
-    # Benchmark(SphereFunction, algorithms.Optimization, [10.0, -10.0], 0.1).run_steepest_descent()
-    # Benchmark(RosenbrockFunction, algorithms.Optimization, [-1.2, 1.0], 0.001).run_steepest_descent()
-    # Benchmark(RosenbrockFunction, algorithms.Optimization, [0.0, 0.0], 0.001).run_steepest_descent()
-    # Benchmark(HimmelblauFunction, algorithms.Optimization, [3.0, 0.0], 0.001).run_steepest_descent()
-    # Benchmark(HimmelblauFunction, algorithms.Optimization, [-3.0, 3.0], 0.001).run_steepest_descent()
-
-    # Benchmark(SphereFunction, algorithms.Optimization, [-1.2, 1.0]).run_newton_method()
-    # Benchmark(BoothFunction, algorithms.Optimization, [0.0, 0.0]).run_newton_method()
-    # Benchmark(RosenbrockFunction, algorithms.Optimization, [0, 1]).run_newton_method()
-    # Benchmark(HimmelblauFunction, algorithms.Optimization, [-2.0, 2.0]).run_newton_method()
+    except Exception as error:
+        print(f"Error occured: {error}")
