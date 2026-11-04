@@ -36,12 +36,25 @@ class Optimization:
 
     def steepest_descent(self, x0, tolerance = 1e-6, step_size = 0.1, maximum_iterations = 100):
         x = np.asarray(x0, dtype = float).copy()
+        if x.ndim != 1 or x.size == 0:
+            raise ValueError("x0 must be a non-empty one-dimensional array.")
+
+        if not np.all(np.isfinite(x)):
+            raise ValueError("x0 contains non-finite values.")
+
+        if tolerance <= 0 or not np.isfinite(tolerance):
+            raise ValueError("tolerance must be a positive finite number.")
+
+        if maximum_iterations < 0 or not isinstance(maximum_iterations, (int, np.integer)):
+            raise ValueError("maximum_iterations must be a non-negative integer.")
+       
         history = {"x": [], "objective_value": [], "gradient_value": [], "gradient_norm": []}
+        
         converged = False        
         
         for number_of_iterations in range(maximum_iterations):
             objective_value, gradient_value, gradient_norm = self.evaluate_and_record_history(x, history)
-
+            
             # check if stopping criterion is met
             if gradient_norm < tolerance:
                 converged = True
@@ -157,15 +170,15 @@ if __name__ == "__main__":
         return np.array([[2, 0], [0, 2]])
 
     test = Optimization(f, g, h)
-    x, y, z, w = test.newton_method(np.array([100, 100]))
+    x, y, z, w = test.newton_method(np.array([100, 100]), max_iter = 0)
     print("Newton Method test(not reaching maximum iterations):-")
-    print("The final x vaule: ", x)
+    print("The final x value: ", x)
     print("Number of iterations stored in histoy: ", len(y["x"]))
     print("Convergence: ", z)
     print("Number of iterations: ", w)
 
     #testing steepest descent when convergence occurs before reaching maximum iterations
-    x, y, z, w = test.steepest_descent(np.array([1, 1]), 1e-6 , 0.1)
+    x, y, z, w = test.steepest_descent(np.array([0.1, 0.1]), 1e-2 , 0.1)
     print("Steepest Descent test(not reaching maximum iterations):-")
     print("The final x value:", x)
     print("Number of iterations stored in history: ", len(y["x"]))
