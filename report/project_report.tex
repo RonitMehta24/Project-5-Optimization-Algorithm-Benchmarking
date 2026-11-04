@@ -1,0 +1,23 @@
+\documentclass{report}
+\title{Project Report\\
+  Optimization Algorithms and benchmarking}
+\author{Ronit Mehta, Sajja Phani Kumar, Sayani Mondal, Swapnil Chaturvedi}
+\date{}
+\begin{document}
+\maketitle
+\section*{Project Design}
+For the sake of ease of integration of work by different people, the following design decisions were made. The project is divided into three source files:
+\begin{itemize}
+\item ``algorithms.py''\\
+  This includes an Optimization class, which related to the implementation of the unconstrained optimization algorithms(steepest descent and newton's method).
+\item ``test\_functions.py''\\
+  This includes the information related to each of the test functions that is needed to be input into the optimization algorithms for them to function, namely the objective function, gradient and the hessian. Along with this the information related to testing the correctness of the algorithms is also stored. To keep all the information related to a particular test function in one place, we created a class for that specific test function and put all the information mentioned above in this class in pre-defined format and naming convention, that is for each test function we have a seperate class, but the attributes and methods of each of these classes is named consistently so that for each one can access the attributes and methods inside it, without having to know what function it is exactly. This was done so that all the information related to a function can be passed around with a single class. 
+\item ``benchmarking.py''\\
+  This includes a Benchmark class, which takes the work of the two files above and combines them to give the verifications, visualizations, benchmarking, etc. The advantage of creating the classes above is that in the benchmark class we can just pass in any test function class as defined above and it will be mapped to the optimization class, allowing for easy testing.
+  
+\end{itemize}
+\section*{Test Functions}
+
+
+\section*{Testing and Benchmarking}
+\end{document}
