@@ -41,7 +41,7 @@ class Benchmark:
 
         self.results = {}  #Dictionary to store results
 
-    def run_newton_method(self, plot = True):
+    def run_newton_method(self, plot = True, export = False):
         start = perf_counter()
         x , history, converged, iteration_count = (
                         self.optimizer.newton_method(x0 = self.x0.copy(),
@@ -71,10 +71,10 @@ class Benchmark:
 
 
         if plot:    # Plot the optimization history if requested
-            self.plot_history("Newton's Method")
+            self.plot_history("Newton's Method", export =  export)
         return x, history, converged, iteration_count
 
-    def run_steepest_descent(self, plot = True):
+    def run_steepest_descent(self, plot = True, export = False):
 
         start = perf_counter()   
         x , history, converged, iteration_count = (
@@ -108,12 +108,12 @@ class Benchmark:
         print("Elapsed time:", f"{elapsed_time:.6f} seconds")
 
         if plot:
-            self.plot_history("Steepest Descent")
+            self.plot_history("Steepest Descent", export = export)
         return x, history, converged, iteration_count
     
     
     
-    def compare_methods(self, plot = True):
+    def compare_methods(self, plot = True, export = False):
         
         #Clear previous results before starting a new comparison
         self.results = {}
@@ -126,7 +126,7 @@ class Benchmark:
 
         # Plot both methods together
         if plot:
-            self.plot_history()
+            self.plot_history(export = export)
 
         return self.results
 
@@ -137,7 +137,7 @@ class Benchmark:
         return np.min(distances)
 
 
-    def plot_history(self, method = None):
+    def plot_history(self, method = None, export = False):
         
         #Check whether optimization results are available
         if not self.results:
@@ -263,11 +263,15 @@ class Benchmark:
         axes[1].grid(alpha=0.2)
 
         plt.tight_layout()
+        if export:
+            fig.savefig("visualization.png", dpi = 300, bbox_inches="tight")
         plt.show()
 
 
 if __name__ == "__main__":
 
+    
+    
     functions = {
         "1": (SphereFunction, [5.0, 5.0], 0.1),
         "2": (BoothFunction, [0.0, 0.0], 0.01),
@@ -331,6 +335,15 @@ if __name__ == "__main__":
 
         plot = answer in ("", "y", "yes")
 
+        export = False
+        if plot:
+            answer = input("Save plots?[y/n, default: n]: ").strip().lower()
+            if answer not in ("", "y", "yes", "n", "no"):
+                raise ValueError("Enter y or n.")
+            export = answer in ("y", "yes")
+
+        
+
         benchmark = Benchmark(
             test_class=function,
             optimization_class=algorithms.Optimization,
@@ -340,13 +353,15 @@ if __name__ == "__main__":
 
         
         if method == "1":
-            benchmark.run_steepest_descent(plot=plot)
+            benchmark.run_steepest_descent(plot=plot, export = export)
 
         elif method == "2":
-            benchmark.run_newton_method(plot=plot)
+            benchmark.run_newton_method(plot=plot, export = export)
 
         else:
-            benchmark.compare_methods(plot=plot)
+            benchmark.compare_methods(plot=plot, export = export)
 
     except Exception as error:
         print(f"Error occured: {error}")
+
+    
