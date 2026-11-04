@@ -48,13 +48,21 @@ This clears the previous results and runs both methods from the same initial poi
 
 In this version, compare_methods() always shows the combined plot and does not take a plot argument. To get both sets of results without plotting, call the two run methods separately with plot=False.
 
+## Measuring execution time
+
+Both run methods use `perf_counter()` from Python's `time` module to measure elapsed execution time in seconds.
+
+The timer starts immediately before the optimizer call and stops immediately after it returns. The measured interval includes preparing the copied starting point, optimization updates, convergence checks, and iteration history recording. Printing, storing the result summary, and plotting happen after the timer stops.
+
+Each optimizer runs once. Timing is written directly inside `run_newton_method()` and `run_steepest_descent()`; no separate timing helper is needed.
+
 ## Results and plots
 
 Both run methods return the final point, iteration history, convergence status, and iteration count:
 
 x, history, converged, iteration_count = benchmark.run_steepest_descent(plot=False)
 
-Results are also stored in `benchmark.results`, under either `"Steepest Descent"` or `"Newton's Method"`. Each entry contains the final point, history, convergence status, iteration count, final objective value, and distance from the nearest known minimizer.
+Results are also stored in 'benchmark.results', under either "Steepest Descent" or "Newton's Method". Each entry contains the final point, history, convergence status, iteration count, final objective value, and distance from the nearest known minimizer.
 
 result = benchmark.results["Steepest Descent"]
 print(result["final_objective"])
@@ -75,14 +83,32 @@ The last call plots all stored methods. A method must have been run before its r
 
 ## Running experiments
 
-Inside the if __name__ == "__main__": block, uncomment the experiment you want to run and comment out the others. For example:
+Run the program from the repository folder:
 
+"python src/benchmarking.py"
 
-    # Compare both methods.
-    # Benchmark(SphereFunction, algorithms.Optimization, [5.0, 5.0], 0.1).compare_methods()
+The 'if __name__ == "__main__":' block uses 'input()' to collect experiment settings from the terminal. Importing the file from another Python file does not start the input menu.
 
-    # Run steepest descent with a chosen step size.
-    # Benchmark(SphereFunction, algorithms.Optimization, [5.0, 5.0], 0.5).run_steepest_descent()
+First, choose the function: '1' for Sphere, '2' for Booth, '3' for Rosenbrock, or '4' for Himmelblau. A dictionary maps the choice to its function class, default starting point, and default steepest-descent step size. Users choose an existing function rather than entering a mathematical expression.
 
-    # Run Newton's method from a chosen starting point.
-    # Benchmark(RosenbrockFunction, algorithms.Optimization, [0.0, 1.0]).run_newton_method()
+Next, choose the experiment: '1' for steepest descent, '2' for Newton's method, or '3' to compare both.
+
+Enter the starting point as two numbers separated by a space, such as '5 5' or '-1.2 1'. Do not use brackets or commas. The program splits the text and converts it into a floating-point NumPy array. It checks that there are exactly two coordinates and both are finite. Press Enter to use the displayed default.
+
+The step-size prompt appears only for steepest descent or a comparison. The input is converted using `float()` and must be positive and finite. Press Enter to use the default. Newton's method does not receive this fixed step size.
+
+The defaults are '[5, 5]' and step '0.1' for Sphere, '[0, 0]' and step '0.01' for Booth, '[-1.2, 1]' and step '0.001' for Rosenbrock, and `[0, 0]' and step '0.001' for Himmelblau.
+
+Finally, enter `y` to show plots or `n` for printed results only. Press Enter to show plots. The program creates a 'Benchmark' object from the selected settings and calls the chosen run method or 'compare_methods(plot=plot)'.
+
+For example, this input sequence compares both methods on Sphere:
+
+"Function number: 1
+Experiment number: 3
+Initial point: 5 5
+Steepest-descent step size: 0.1
+Show plots? y"
+
+Both methods print their numerical results and execution times. If plots were requested, their curves and trajectories appear in one combined figure.
+
+Invalid selections, malformed coordinates, and invalid step sizes produce an error message and end the run. The 'try except' displays handled errors and ends the experiment; cancelling input also ends it. The program does not automatically retry. Run the command again for another experiment.
