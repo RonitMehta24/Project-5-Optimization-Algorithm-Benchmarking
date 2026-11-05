@@ -1,5 +1,4 @@
 import algorithms
-import matplotlib.pyplot as plt
 from time import perf_counter
 
 from test_functions import (
