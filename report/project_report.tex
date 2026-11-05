@@ -124,14 +124,37 @@ The Himmelblau function tests the algorithms' convergence to one of four global 
 Steepest Descent & 672 & 1.91e-14 & (3.0000, 2.0000) \\ \hline
 Newton's Method & 67 & 2.49e-22 & (3.5844, -1.8481) \\ \hline
 \end{tabular}
-\caption{Benchmarking results for the Himmelblau Function.}
+\caption{Benchmarking results for the Himmelblau Function with initial point (0, 0).}
 \end{table}
 
-\textbf{Interpretation:} Because the Himmelblau function has multiple global minima, the choice of algorithm from the exact same starting point $(0,0)$ dictated which basin of attraction the optimizer fell into. Steepest Descent smoothly followed the immediate local gradient path upwards, converging to the minimizer at (3.0000, 2.0000) after 672 iterations. Newton's Method, taking much larger initial steps dictated by the local curvature matrix, jumped across the landscape to converge at a completely different minimizer at (3.5844, -1.8481) in only 67 iterations.
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Method} & \textbf{Iterations} & \textbf{Final $f(x)$} & \textbf{Final Point} \\ \hline
+
+Steepest Descent & 310 & 6.46e-15 & (-3.77931025 -3.283186)  \\ \hline
+Newton's Method & 58 & 7.06e-16 & (-3.77931025 -3.283186) \\ \hline
+\end{tabular}
+\caption{Benchmarking results for the Himmelblau Function with initial point (-1, -1).}
+\end{table}
+
+
+\textbf{Interpretation:} Because the Himmelblau function has multiple global minima, the choice of algorithm from the exact same starting point $(0,0)$ dictated which basin of attraction the optimizer fell into. Steepest Descent smoothly followed the immediate local gradient path, converging to the minimizer at (3.0000, 2.0000) after 672 iterations. Newton's Method, taking much larger initial steps dictated by the local curvature matrix, jumped across the landscape to converge at a completely different minimizer at (3.5844, -1.8481) in only 67 iterations. For the different starting point(-1, -1) both algorithms achieve different minimizers, namely the one at (-3.779310, -3.283186).
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=1.2\textwidth]{himmelblau.png}
-    \caption{Convergence trajectories and objective value decay for the Himmelblau Function.}
+    \includegraphics[width=0.9\textwidth]{himmelblau.png}
+    \caption{Convergence trajectories and objective value decay for the Himmelblau Function with initial point (0, 0).}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\textwidth]{himmelblau_alt.png}
+    \caption{Convergence trajectories and objective value decay for the Himmelblau Function with initial point (-1, -1).}
 \end{figure}
 \end{document}
+
+\end{document}
+
+
